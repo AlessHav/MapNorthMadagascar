@@ -31,6 +31,35 @@ R packages:
 - sf
 - gdalcubes
 
+---
+
+## Notes
+
+All Sentinel tiles are stored in a single directory to enable reconstruction of multi-tile data cubes.
+Rainfall data (original coarse resolution) are resampled to 10 m to match other datasets. This does not increase spatial accuracy.
+Processing time can be several hours depending on the number of tiles and computing resources.
+
+---
+
+## Output
+
+The script generates:
+
+Sentinel-2 cubes
+Spectral indices
+Sentinel-1 cubes
+DEM cube
+Rainfall cube
+
+Each dataset is saved in its respective output directory.
+
+---
+
+## Author
+
+Alessandra Havinga 
+alessandra.havinga@geneve.ch
+
 Install them using:
 
 ```r
