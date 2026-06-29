@@ -145,6 +145,10 @@ R packages:
 - ggplot2
 - tidyr
 
+Install them using:
+
+```r
+install.packages(c("sits", "torch", "sf", "gdalcubes", ...))
 ---
 
 ## Reference
@@ -162,7 +166,3 @@ While Scripts 1 and 2 reproduce established SITS workflows, Scripts 3–5 extend
 Alessandra Havinga 
 alessandra.havinga@geneve.ch
 
-Install them using:
-
-```r
-install.packages(c("sits", "torch", "sf", "gdalcubes"))
