@@ -1,11 +1,20 @@
 # ==========================================================
-#   Multi-source Earth Observation Data Cube Generation Script
+# MULTI-SOURCE EARTH OBSERVATION DATA CUBE GENERATION
 # ==========================================================
-
-# This script generates data cubes from Sentinel-1, Sentinel-2,
-# DEM, and rainfall datasets using the sits package.
-# It includes temporal regularization and spectral index computation.
-
+# This script generates multi-source Earth observation data
+# cubes using the sits package.
+#
+# The workflow follows the data preparation pipeline described
+# in the official SITS Book:
+# https://e-sensing.github.io/sitsbook/
+#
+# Main steps:
+# 1. Generate and regularize Sentinel-2 data cubes
+# 2. Compute spectral indices from Sentinel-2 imagery
+# 3. Generate and regularize Sentinel-1 data cubes
+# 4. Generate and regularize a DEM data cube
+# 5. Generate and regularize a rainfall data cube
+# ==========================================================
 #------------------------------------------
 #   Load required packages
 #------------------------------------------
@@ -28,46 +37,45 @@ tiles <- c("39LTG", "39LUG","38LRL","39LTF","39LUF")
 
 # Working directory path
 directory <- "/home/users/h/havinga/MapNorthMadagascar/"
-directory <- "path/to/project/"
 
 # Output directory for Sentinel-2 cubes
-outputS2 <- paste0(directory,"Data/CubeS2")
+outputS2 <- file.path(directory,"Data/S2")
 
 # Output directory for Sentinel-2 indices
-outputS2ind <- paste0(directory,"Data/CubeS2indices")
+outputS2ind <- file.path(directory,"Data/Cube/S2indices")
 
 # Output directory for Sentinel-1 cubes
-outputS1 <- paste0(directory,"Data/CubeS1")
+outputS1 <- file.path(directory,"Data/Cube/S1")
 
 # Output directory for DEM
-outputDEM <- paste0(directory,"Data/DEM")
+outputDEM <- file.path(directory,"Data/Cube/DEM")
 
 # Output directory for rainfall data
-outputRain <- paste0(directory,"Data/RAIN")
+outputRain <- file.path(directory,"Data/Cube/RAIN")
 
 # Bands of interest for Sentinel-2 imagery
-bandsS2 = c("B01","B02","B03","B04","B05","B06","B12", "B8A", "B11", "CLOUD")
+bandsS2 <- c("B01","B02","B03","B04","B05","B06","B12", "B8A", "B11", "CLOUD")
 
 # Bands of interest for Sentinel-1 imagery
-bandsS1 = c("VV", "VH")
+bandsS1 <- c("VV", "VH")
 
 # Sentinel-1 orbit direction (choose between "ascending" or "descending")
-orbit = "descending"
+orbit <- "descending"
 
 # Time range for image selection
-start_date = "2021-01-01"
-end_date = "2025-01-01"
+start_date <- "2021-01-01"
+end_date <- "2025-01-01"
 
-# Temporal resolution for the time series (e.g., one image every 4 months)
-period = "P4M"
+# Temporal resolution for the time series (e.g., temporal aggregation every four months)
+period <- "P4M"
 
 # Spatial resolution in meters
-res = 10
+res <- 10
 
 # Number of CPU cores used for parallel processing
-multicores = 16
+multicores <- 16
 
-#création si besoin des dossiers des cubes
+# Create output directories if they do not already exist
 dir.create(outputS2, recursive = TRUE, showWarnings = FALSE)
 dir.create(outputS2ind, recursive = TRUE, showWarnings = FALSE)
 dir.create(outputS1, recursive = TRUE, showWarnings = FALSE)
@@ -91,7 +99,7 @@ for (i in tiles) {
     bands = bandsS2,
     start_date = start_date,
     end_date = end_date)
-  print("Sentinel-2 cube created")
+  message("Sentinel-2 cube created")
   
   # 1.b Regularize the Sentinel-2 cube (temporal and spatial alignment)
   s2_reg <- sits_regularize(
@@ -101,7 +109,7 @@ for (i in tiles) {
     multicores = multicores,
     output_dir = outputS2
   )
-  print (paste("Processed tile:", i))
+  message("Processed tile:", i)
 }
 
 #-------------------------------------------------------
@@ -116,14 +124,14 @@ s2_reg <- sits_cube(
   data_dir    = outputS2
 )
 
-
 # NDVI (Normalized Difference Vegetation Index)
 s2_reg <- sits_apply(data = s2_reg,
                      NDVI = (B8A - B04) / (B8A + B04),
                      output_dir = outputS2ind
 )
+# Optional quality check
+#plot(s2_reg, band = "NDVI", palette = "RdYlGn")
 
-plot(s2_reg, band = "NDVI", palette = "RdYlGn")
 
 # EVI (Enhanced Vegetation Index)
 s2_reg <- sits_apply(data = s2_reg,
@@ -131,15 +139,11 @@ s2_reg <- sits_apply(data = s2_reg,
                      output_dir = outputS2ind
 )
 
-plot(s2_reg, band = "EVI", palette = "RdYlGn")
-
 # SIPI (Structure Insensitive Pigment Index)
 s2_reg <- sits_apply(data = s2_reg,
                      SIPI = (B8A - B01) / (B8A - B04),
                      output_dir = outputS2ind
 )
-
-plot(s2_reg, band = "SIPI", palette = "RdYlGn")
 
 # GNDVI (Green NDVI)
 s2_reg <- sits_apply(data = s2_reg,
@@ -147,15 +151,11 @@ s2_reg <- sits_apply(data = s2_reg,
                      output_dir = outputS2ind
 )
 
-plot(s2_reg, band = "GNDVI", palette = "RdYlGn")
-
 # NDMI (Normalized Difference Moisture Index)
 s2_reg <- sits_apply(data = s2_reg,
                      NDMI = ((B8A-B11) / (B8A+B11 )),
                      output_dir = outputS2ind
 )
-
-plot(s2_reg, band = "NDMI", palette = "RdYlGn")
 
 # BSI (Bare Soil Index)
 s2_reg<- sits_apply(data = s2_reg,
@@ -226,7 +226,7 @@ Rain_Cube <-sits_cube(source="DEAFRICA",
 # Regularize rainfall cube
 
 # Rainfall data (original resolution ~1 km) are resampled to 10 m
-# to match the spatial resolution of other datasets.
+# to match the spatial resolution oprint("Sentinel-2 cube created") other datasets.
 # This does not increase the intrinsic spatial accuracy.
 
 Rain_Reg <- sits_regularize(
