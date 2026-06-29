@@ -149,6 +149,7 @@ Install them using:
 
 ```r
 install.packages(c("sits", "torch", "sf", "gdalcubes", ...))
+```
 ---
 
 ## Reference
